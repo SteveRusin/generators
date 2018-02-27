@@ -6,26 +6,41 @@ for (let i = 1; i <= 10; i++) {
     usersUrls.push(`https://jsonplaceholder.typicode.com/users/${i}`)
 }
 
+let timeout;
+let timer;
+function createTimeout() {
+    return setTimeout(() => {
+        timeout = true;
+    }, 35);
+}
 
 function* generator() {
-    const users = [];
     for (let userUrl of usersUrls) {
-        yield fetch(userUrl)
-            .then(res => res.json())
-            .then(user => users.push(user.name));
+        timer = createTimeout();
+        if (timeout) return;
+        const request = yield fetch(userUrl);
+        request.then(user => console.log(user.name));
+
     }
-    return users;
 }
 
-function genWrapper(generator, callback) {
+function genWrapper(generator) {
     const usersGen = generator();
-    let fetched;
-    do {
-        fetched = usersGen.next();
-    } while (!fetched.done)
-    return fetched.value;
+
+    function handleGen(yeilded) {
+        if (!yeilded.done) {
+            yeilded.value.then(serverResponse => {
+                clearTimeout(timer);
+                if (timeout) {
+                    console.error('TIMEOUT');
+                    return;
+                }
+                handleGen(usersGen.next(serverResponse.json()))
+            })
+        }
+    }
+
+    return handleGen(usersGen.next());
 }
 
-
-console.log("open me", genWrapper(generator));
-
+genWrapper(generator)
