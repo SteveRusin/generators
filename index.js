@@ -6,25 +6,26 @@ for (let i = 1; i <= 10; i++) {
     usersUrls.push(`https://jsonplaceholder.typicode.com/users/${i}`)
 }
 
+
 function* generator() {
+    const users = [];
     for (let userUrl of usersUrls) {
-        const request = yield fetch(userUrl);
-        request.then(user => console.log(user.name));
+        yield fetch(userUrl)
+            .then(res => res.json())
+            .then(user => users.push(user.name));
     }
+    return users;
 }
 
-function genWrapper(generator) {
+function genWrapper(generator, callback) {
     const usersGen = generator();
-
-    function handleGen(yeilded) {
-
-        if (!yeilded.done) {
-            yeilded.value.then(serverResponse => handleGen(usersGen.next(serverResponse.json())))
-        }
-    }
-
-    return handleGen(usersGen.next());
+    let fetched;
+    do {
+        fetched = usersGen.next();
+    } while (!fetched.done)
+    return fetched.value;
 }
 
 
-genWrapper(generator);
+console.log("open me", genWrapper(generator));
+
