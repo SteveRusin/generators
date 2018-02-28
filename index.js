@@ -17,7 +17,7 @@ function* generator() {
     return users;
 }
 
-function genWrapper(generator, callback) {
+function genWrapper(generator) {
     const usersGen = generator();
     let fetched;
     do {
