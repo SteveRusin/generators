@@ -1,46 +1,42 @@
 // https://jsonplaceholder.typicode.com/ 
+const start = document.querySelector('.start');
+const stop = document.querySelector('.stop');
 
 const usersUrls = [];
-
+let usersGen;
+let singleton = true;
+let interval;
 for (let i = 1; i <= 10; i++) {
     usersUrls.push(`https://jsonplaceholder.typicode.com/users/${i}`)
 }
 
-let timeout;
-let timer;
-function createTimeout() {
-    return setTimeout(() => {
-        timeout = true;
-    }, 35);
-}
-
 function* generator() {
-    for (let userUrl of usersUrls) {
-        timer = createTimeout();
-        if (timeout) return;
-        const request = yield fetch(userUrl);
-        request.then(user => console.log(user.name));
-
+    for (let user of usersUrls) {
+        yield fetch(user);
     }
 }
 
 function genWrapper(generator) {
-    const usersGen = generator();
+    let fetched;
+    singleton = false;
+    usersGen = generator();
+    interval = setInterval(() => {
+        fetched = usersGen.next();
 
-    function handleGen(yeilded) {
-        if (!yeilded.done) {
-            yeilded.value.then(serverResponse => {
-                clearTimeout(timer);
-                if (timeout) {
-                    console.error('TIMEOUT');
-                    return;
-                }
-                handleGen(usersGen.next(serverResponse.json()))
-            })
-        }
-    }
+        if (fetched.done) return clearInterval(interval); // exit if all fetched or stop button is pressed
 
-    return handleGen(usersGen.next());
+        fetched.value
+            .then(response => response.json())
+            .then(user => console.log(`Hi, I'm %c${user.name.match(/[^\s]+/)}!`, 'background: 	#00008B; color: #7FFF00'))
+    }, 2000)
 }
 
-genWrapper(generator)
+
+
+
+start.addEventListener('click', () => singleton && genWrapper(generator));
+stop.addEventListener('click', () => {
+    usersGen && usersGen.return();
+    clearInterval(interval)
+    singleton = true;
+}) 

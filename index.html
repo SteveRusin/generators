@@ -6,9 +6,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
+
+    <style>
+        body {
+            background-image: url(http://cdn.backgroundhost.com/backgrounds/subtlepatterns/wood_pattern.png);
+        }
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .center .btn:first-child {
+            margin-right: 10vw;
+        }
+        .center .btn {
+            padding: 25px;
+        }
+    </style>
 </head>
 
 <body>
+    <div class="container center">
+        <button class="btn btn-success start">Start request</button>
+        <button class="btn btn-danger stop">Stop fetching</button>
+    </div>
+    </div>
     <script src="./index.js"></script>
 </body>
 
