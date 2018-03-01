@@ -13,32 +13,38 @@ const nestedObj = {
     key10: 'value10',
 }
 
-
 function* generator(obj) {
-    yield* Object.entries(obj)
+    yield* Object.entries(obj);
+    return 'done';
 }
 
 function genWrapper(generator, obj, key) {
     const myGen = generator(obj, key);
+    const nestedObjs = [];
 
-
-    function handleGen(yeilded) {
-        if (yeilded.value[0] === key) {
-            return yeilded.value[1];
+    function handleGen({ value, done }) {
+        const [yKey, yValue] = value;
+        if (yKey === key) {
+            return yValue;
         }
 
-        if (yeilded.value && typeof yeilded.value[1] === 'object') {
-            return genWrapper(generator, yeilded.value[1], key);
+        if (typeof yValue === 'object') {
+            nestedObjs.push(yValue)
         }
 
+        if (done) {
+            return !!nestedObjs.length ? nestedObjs.map(el => genWrapper(generator, el, key)) : 'Nothing found';
+        }
         
-
         return handleGen(myGen.next())
-
     }
 
     return handleGen(myGen.next());
 }
 
+function unwrapResult(result) {
+    return Array.isArray(result) ? result.reduce(el => el).toString() : result;
+}
 
-console.log(genWrapper(generator, nestedObj, 'key8'))
+console.log(unwrapResult(genWrapper(generator, nestedObj, 'key9')))
+
