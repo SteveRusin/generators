@@ -1,42 +1,44 @@
-// https://jsonplaceholder.typicode.com/ 
-const start = document.querySelector('.start');
-const stop = document.querySelector('.stop');
-
-const usersUrls = [];
-let usersGen;
-let singleton = true;
-let interval;
-for (let i = 1; i <= 10; i++) {
-    usersUrls.push(`https://jsonplaceholder.typicode.com/users/${i}`)
+const nestedObj = {
+    key1: 'value1',
+    key2: 'value2',
+    key3: {
+        key4: 'value4',
+        key5: 'value5',
+        key6: {
+            key7: 'value7',
+            key8: 'value8',
+        },
+        key9: 'value9'
+    },
+    key10: 'value10',
 }
 
-function* generator() {
-    for (let user of usersUrls) {
-        yield fetch(user);
+
+function* generator(obj) {
+    yield* Object.entries(obj)
+}
+
+function genWrapper(generator, obj, key) {
+    const myGen = generator(obj, key);
+
+
+    function handleGen(yeilded) {
+        if (yeilded.value[0] === key) {
+            return yeilded.value[1];
+        }
+
+        if (yeilded.value && typeof yeilded.value[1] === 'object') {
+            return genWrapper(generator, yeilded.value[1], key);
+        }
+
+        
+
+        return handleGen(myGen.next())
+
     }
-}
 
-function genWrapper(generator) {
-    let fetched;
-    singleton = false;
-    usersGen = generator();
-    interval = setInterval(() => {
-        fetched = usersGen.next();
-
-        if (fetched.done) return clearInterval(interval); // exit if all fetched or stop button is pressed
-
-        fetched.value
-            .then(response => response.json())
-            .then(user => console.log(`Hi, I'm %c${user.name.match(/[^\s]+/)}!`, 'background: 	#00008B; color: #7FFF00'))
-    }, 2000)
+    return handleGen(myGen.next());
 }
 
 
-
-
-start.addEventListener('click', () => singleton && genWrapper(generator));
-stop.addEventListener('click', () => {
-    usersGen && usersGen.return();
-    clearInterval(interval)
-    singleton = true;
-}) 
+console.log(genWrapper(generator, nestedObj, 'key8'))
