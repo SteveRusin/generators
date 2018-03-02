@@ -28,7 +28,7 @@ function genWrapper(generator, obj, key) {
             return yValue;
         }
 
-        if (typeof yValue === 'object') {
+        if (yValue && typeof yValue === 'object') {
             nestedObjs.push(yValue)
         }
 
